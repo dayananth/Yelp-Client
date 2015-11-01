@@ -7,15 +7,16 @@
 //
 
 #import "MainViewController.h"
+#import "FiltersViewController.h"
 #import "YelpBusiness.h"
 #import "YelpBusinessCell.h"
 
-@interface MainViewController () <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate>
+@interface MainViewController () <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, UISearchResultsUpdating, UISearchControllerDelegate, FiltersViewControllerDelegate>
 @property (nonatomic, strong) NSArray *yelpBusinesses;
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property UISearchController *searchController;
-@property UISearchBar *searchBar;
+@property NSMutableArray *filteredData;
 @end
 
 @implementation MainViewController
@@ -41,6 +42,7 @@
     button.layer.borderColor = [UIColor whiteColor].CGColor;
     button.layer.borderWidth = 1.0f;
     [button setTitle:@"Filters" forState:UIControlStateNormal];
+    [button addTarget:self action:@selector(onFilterButton) forControlEvents:UIControlEventAllEvents];
     
     UIBarButtonItem *leftButton = [[UIBarButtonItem alloc] initWithCustomView:button];
     [leftButton setTitleTextAttributes:
@@ -52,26 +54,52 @@
 //    [leftButton set
     self.navigationItem.leftBarButtonItem = leftButton;
     
-    self.searchBar = [[UISearchBar alloc] init];
-    self.searchBar.showsCancelButton = YES;
-    [self.searchBar sizeToFit];
-    [self.searchBar setTintColor:[UIColor blackColor]];
-    self.searchBar.placeholder = @"Restaurants";
-    self.searchBar.delegate = self;
+//    self.searchController.searchBar = [[UISearchBar alloc] init];
+    self.searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
+//    self.searchController.searchBar.showsCancelButton = YES;
+    [self.searchController.searchBar sizeToFit];
+    [self.searchController.searchBar setTintColor:[UIColor blackColor]];
+    self.searchController.searchBar.placeholder = @"Restaurants";
+    self.searchController.searchBar.delegate = self;
+    self.searchController.searchResultsUpdater = self;
+    self.searchController.delegate = self;
     
 //    UIView *barWrapper = [[UIView alloc]initWithFrame:searchBar.bounds];
 //    [barWrapper addSubview:searchBar];
-    self.navigationItem.titleView = self.searchBar;
+    self.searchController.hidesNavigationBarDuringPresentation = false;
+    self.searchController.dimsBackgroundDuringPresentation = false;
+    self.navigationItem.titleView = self.searchController.searchBar;
+    self.definesPresentationContext = true;
     
-    [YelpBusiness searchWithTerm:@"Restaurants"
+    [self searchWithTerm:@"Restaurants"
                         sortMode:YelpSortModeBestMatched
                       categories:@[@"burgers"]
                            deals:NO
+//                      completion:^(NSArray *businesses, NSError *error) {
+//                          for (YelpBusiness *business in businesses) {
+//                              NSLog(@"%@", business);
+//                          }
+//                          self.yelpBusinesses = businesses;
+//                          self.filteredData = [[NSMutableArray alloc] initWithCapacity:self.yelpBusinesses.count];
+//                          [self.tableView reloadData];
+//                      }
+     ];
+}
+
+
+-(void) searchWithTerm:term
+        sortMode:(YelpSortMode)sortMode categories:(NSArray *)categories deals:(BOOL)hasDeal{
+    
+    [YelpBusiness searchWithTerm:term
+                        sortMode:sortMode
+                      categories:categories
+                           deals:hasDeal
                       completion:^(NSArray *businesses, NSError *error) {
                           for (YelpBusiness *business in businesses) {
                               NSLog(@"%@", business);
                           }
                           self.yelpBusinesses = businesses;
+                          self.filteredData = [[NSMutableArray alloc] initWithCapacity:self.yelpBusinesses.count];
                           [self.tableView reloadData];
                       }];
 }
@@ -81,21 +109,64 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if(self.searchController.active){
+        return self.filteredData.count;
+    }
     return self.yelpBusinesses.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     
     YelpBusinessCell *cell = [tableView dequeueReusableCellWithIdentifier:@"YelpBusinessCell"];
-    cell.yelpBusiness = self.yelpBusinesses[indexPath.row];
+    if(self.searchController.active){
+        cell.yelpBusiness = self.filteredData[indexPath.row];
+    }else{
+        cell.yelpBusiness = self.yelpBusinesses[indexPath.row];
+    }
     return cell;
 }
 
-
-- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText{
-    
-    NSLog(searchText);
+- (void)updateSearchResultsForSearchController:(UISearchController *)searchController{
+    if(searchController.searchBar.text.length > 0){
+        [self.filteredData removeAllObjects];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.name contains[c] %@",searchController.searchBar.text];
+        self.filteredData = [[self.yelpBusinesses filteredArrayUsingPredicate:predicate] mutableCopy];
+        [self.tableView reloadData];
+    }
 }
 
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar
+{
+    [self.searchController setActive:NO];
+    searchBar.text = @"";
+    [self.tableView reloadData];
+}
+
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
+{
+//    if ([searchText length] == 0) {
+//        [self.searchController setActive:NO];
+//        [self.tableView reloadData];
+//        [self.searchController.searchBar res]
+//    }
+}
+
+
+#pragma mark FiltersViewController Delegate
+
+-(void) filtersViewController: (FiltersViewController *) filtersViewController didChangeFilters: (NSDictionary *)filters{
+//    NSLog(@"Filter applied: %s",filters[@"category_filter"]);
+    [self searchWithTerm:@"Restaurants" sortMode:0 categories:filters[@"category_filter"] deals:filters[@"deals_filter"]];
+}
+
+#pragma mark - Private methods
+
+-(void) onFilterButton{
+    FiltersViewController *fvc = [[FiltersViewController alloc] init];
+    fvc.delegate = self;
+    UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:fvc];
+    [self presentViewController:nvc animated:YES
+                     completion:nil];
+}
 
 @end
