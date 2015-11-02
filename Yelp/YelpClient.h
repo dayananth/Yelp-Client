@@ -28,4 +28,11 @@ typedef NS_ENUM(NSInteger, YelpSortMode) {
                                      deals:(BOOL)hasDeal
                                 completion:(void (^)(NSArray *businesses, NSError *error))completion;
 
+- (AFHTTPRequestOperation *)searchWithTerm:(NSString *)term
+                                  sortMode:(YelpSortMode)sortMode
+                                categories:(NSArray *)categories
+                                     deals:(BOOL)hasDeal
+                                    radius:(NSDecimalNumber*) radius
+                                completion:(void (^)(NSArray *businesses, NSError *error))completion;
+
 @end

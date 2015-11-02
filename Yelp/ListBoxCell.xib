@@ -14,7 +14,7 @@
                 <rect key="frame" x="0.0" y="0.0" width="320" height="43.5"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nup-Lq-AGh">
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nup-Lq-AGh">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="43.5"/>
                         <animations/>
                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -26,6 +26,7 @@
                 <constraints>
                     <constraint firstAttribute="bottom" secondItem="nup-Lq-AGh" secondAttribute="bottom" id="4DM-68-TWO"/>
                     <constraint firstItem="nup-Lq-AGh" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="aHm-VH-bs7"/>
+                    <constraint firstItem="nup-Lq-AGh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="nGE-mK-YEm"/>
                     <constraint firstAttribute="trailing" secondItem="nup-Lq-AGh" secondAttribute="trailing" id="pqH-rW-QGR"/>
                     <constraint firstItem="nup-Lq-AGh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="yPz-yu-vCH"/>
                 </constraints>

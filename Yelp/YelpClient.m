@@ -14,6 +14,7 @@ NSString * const kYelpConsumerKey = @"vxKwwcR_NMQ7WaEiQBK_CA";
 NSString * const kYelpConsumerSecret = @"33QCvh5bIF5jIHR5klQr7RtBDhQ";
 NSString * const kYelpToken = @"uRcRswHFYa1VkDrGV6LAW2F8clGh5JHV";
 NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
+int const RADIUS_CONVERSION_FACTOR = 1600;
 
 @interface YelpClient ()
 
@@ -50,7 +51,49 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
                        sortMode:YelpSortModeBestMatched
                      categories:nil
                           deals:NO
+                          radius:nil
                      completion:completion];
+}
+
+- (AFHTTPRequestOperation *)searchWithTerm:(NSString *)term
+                                  sortMode:(YelpSortMode)sortMode
+                                categories:(NSArray *)categories
+                                     deals:(BOOL)hasDeal
+                                    radius:(NSDecimalNumber*) radius
+                                completion:(void (^)(NSArray *businesses, NSError *error))completion
+ {
+    
+    // For additional parameters, see http://www.yelp.com/developers/documentation/v2/search_api
+    NSMutableDictionary *parameters = [@{@"term": term,
+                                         @"ll" : @"37.774866,-122.394556",
+                                         @"sort": [NSNumber numberWithInt:sortMode]}
+                                       mutableCopy];
+    
+    if (categories && categories.count > 0) {
+        parameters[@"category_filter"] = [categories componentsJoinedByString:@","];
+    }
+    
+    if (hasDeal) {
+        parameters[@"deals_filter"] = [NSNumber numberWithBool:hasDeal];
+    }
+    if(radius){
+        NSDecimalNumber *factor = [NSDecimalNumber numberWithInt:RADIUS_CONVERSION_FACTOR];
+        parameters[@"radius_filter"] = [radius decimalNumberByMultiplyingBy:factor];
+    }
+ 
+    
+    NSLog(@"%@", parameters);
+    
+    return [self GET:@"search"
+          parameters:parameters
+             success:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
+                 
+                 NSArray *businesses = responseObject[@"businesses"];
+                 completion([YelpBusiness businessesFromJsonArray:businesses], nil);
+                 
+             } failure:^(AFHTTPRequestOperation * _Nonnull operation, NSError * _Nonnull error) {
+                 completion(nil, error);
+             }];
 }
 
 - (AFHTTPRequestOperation *)searchWithTerm:(NSString *)term
@@ -72,6 +115,7 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
     if (hasDeal) {
         parameters[@"deals_filter"] = [NSNumber numberWithBool:hasDeal];
     }
+    
     
     NSLog(@"%@", parameters);
     

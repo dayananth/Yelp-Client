@@ -400,6 +400,12 @@ typedef NS_ENUM(NSInteger, ListBox) {
         [cell setOn:self.isDealOffered];
         cell.titleLabel.text = @"Offering a Deal";
     }else if(indexPath.section == 3){
+//        if(indexPath.row > 20){
+//            UITableViewCell *loadMoreCell = [[UITableViewCell alloc] init];
+//            UIButton *button = [[UIButton alloc] init];
+//            button.titleLabel.text = @"See All Options";
+//            loadMoreCell
+//        }
         NSArray *categoryArray = dic[@"categories"];
         cell.on = [self.selectedCategories containsObject:categoryArray[indexPath.row]];
         cell.titleLabel.text = categoryArray[indexPath.row][@"name"];

@@ -75,6 +75,7 @@
                         sortMode:YelpSortModeBestMatched
                       categories:@[@"burgers"]
                            deals:NO
+                           radius:nil
 //                      completion:^(NSArray *businesses, NSError *error) {
 //                          for (YelpBusiness *business in businesses) {
 //                              NSLog(@"%@", business);
@@ -88,12 +89,14 @@
 
 
 -(void) searchWithTerm:term
-        sortMode:(YelpSortMode)sortMode categories:(NSArray *)categories deals:(BOOL)hasDeal{
+        sortMode:(YelpSortMode)sortMode categories:(NSArray *)categories deals:(BOOL)hasDeal
+                radius:(NSDecimalNumber *)radius{
     
     [YelpBusiness searchWithTerm:term
                         sortMode:sortMode
                       categories:categories
                            deals:hasDeal
+                        radius:radius
                       completion:^(NSArray *businesses, NSError *error) {
                           for (YelpBusiness *business in businesses) {
                               NSLog(@"%@", business);
@@ -157,6 +160,7 @@
 -(void) filtersViewController: (FiltersViewController *) filtersViewController didChangeFilters: (NSDictionary *)filters{
 //    NSLog(@"Filter applied: %s",filters[@"category_filter"]);
     YelpSortMode v = YelpSortModeBestMatched;
+    NSDecimalNumber *radius = nil;
     if(filters[@"sort"]){
          int num = filters[@"sort"];
         if(num == 2){
@@ -166,7 +170,10 @@
         }
         
     }
-    [self searchWithTerm:@"Restaurants" sortMode:v categories:filters[@"category_filter"] deals:filters[@"deals_filter"]];
+    if(filters[@"distance"]){
+        radius = [NSDecimalNumber numberWithFloat:[filters[@"distance"] floatValue]];
+     }
+    [self searchWithTerm:@"Restaurants" sortMode:v categories:filters[@"category_filter"] deals:filters[@"deals_filter"] radius:radius];
 }
 
 #pragma mark - Private methods
