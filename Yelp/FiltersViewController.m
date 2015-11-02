@@ -8,8 +8,10 @@
 
 #import "FiltersViewController.h"
 #import "switchCell.h"
+#import "ListBoxCell.h"
 
-@interface FiltersViewController () <UITableViewDataSource, UITableViewDataSource, SwitchCellDelegate>
+@interface FiltersViewController () <UITableViewDataSource, UITableViewDataSource, SwitchCellDelegate, UIPickerViewDataSource,
+                                     UIPickerViewDelegate>
 
 @property (nonatomic,readonly) NSDictionary *filters;
 @property (weak, nonatomic) IBOutlet UITableView *filtersTableView;
@@ -17,6 +19,18 @@
 @property (nonatomic, strong) NSArray *filtersNameArray;
 @property (nonatomic, strong) NSMutableSet *selectedCategories;
 @property BOOL isDealOffered;
+@property (nonatomic, strong) UIPickerView *pickerView;
+@property (nonatomic, strong) NSMutableArray *toggleArray;
+@property (nonatomic, strong) NSMutableArray *pickerViewArray;
+@property (nonatomic, strong) NSString *distanceFilter;
+@property (nonatomic, strong) NSDictionary *sortByFilter;
+@property NSInteger *toggle;
+
+typedef NS_ENUM(NSInteger, ListBox) {
+    DISTANCE_LIST_BOX = 0,
+    SORT_BY_LIST_BOX = 1
+};
+
 @end
 
 @implementation FiltersViewController
@@ -47,9 +61,33 @@
     self.filtersTableView.delegate = self;
     [self setFilterProperties];
     [self.filtersTableView registerNib:[UINib nibWithNibName:@"switchCell" bundle:nil] forCellReuseIdentifier:@"switchCell"];
+    [self.filtersTableView registerNib:[UINib nibWithNibName:@"ListBoxCell" bundle:nil] forCellReuseIdentifier:@"ListBoxCell"];
     [self.filtersTableView reloadData];
+    [self configurePickerView];
+    
+}
+
+#pragma mark uipicker view configuration
+-(void) configurePickerView{
+    int i;
+    self.pickerViewArray = [[NSMutableArray alloc] init];
+    self.toggleArray = [[NSMutableArray alloc] init];
+    for (i=0; i<2; i++) {
+        UIPickerView *pickerView = [[UIPickerView alloc] initWithFrame:(CGRect){{0, 0}, 320, 480}];;
+        pickerView.delegate = self;
+        pickerView.dataSource = self;
+        pickerView.center = (CGPoint){160, 640};
+        pickerView.hidden = YES;
+        [pickerView setBackgroundColor:[UIColor whiteColor]];
+        [pickerView setTintColor:[UIColor whiteColor]];
+        [self.pickerViewArray insertObject:pickerView atIndex:i];
+        [self.toggleArray insertObject:[NSNumber numberWithInt:0] atIndex:i];
+        [self.view addSubview:pickerView];
+    }
     
     
+//    self.toggle = 0;
+
 }
 
 
@@ -89,7 +127,14 @@
         }
         NSString *filterString = [names componentsJoinedByString:@","];
         [filters setObject:names forKey:@"category_filter"];
-        [filters setObject:[NSNumber numberWithBool:self.isDealOffered] forKey:@"deals_filter"];
+
+    }
+    [filters setObject:[NSNumber numberWithBool:self.isDealOffered] forKey:@"deals_filter"];
+    if(self.distanceFilter){
+        [filters setObject:self.distanceFilter forKey:@"distance"];
+    }
+    if(self.sortByFilter){
+        [filters setObject:self.sortByFilter[@"code"] forKey:@"sort"];
     }
     
     return filters;
@@ -98,13 +143,15 @@
 -(void) setFilterProperties{
     [self setFiltersNames];
     [self setDealFilter:0];
-    [self setCategories:1];
+    [self setDistance:1];
+    [self setSortBy:2];
+    [self setCategories:3];
     self.selectedCategories = [NSMutableSet set];
     
 }
 
 - (void) setFiltersNames{
-    self.filtersNameArray = @[@"deal", @"categories"];
+    self.filtersNameArray = @[@"deal", @"Distance", @"SortBy",  @"categories"];
 }
 
 -(void) setDealFilter:(int) index{
@@ -116,6 +163,28 @@
     [dealDictionary setObject:@"switch" forKey:@"type"];
     [dealDictionary setObject:[NSNumber numberWithInt:1] forKey:@"count"];
     [self.filtersData insertObject:dealDictionary atIndex:index];
+    
+}
+
+-(void) setDistance:(int) index{
+    NSArray *distancesArray = @[@"0.5", @"1", @"2", @"5"];
+    NSMutableDictionary *distanceDictionary = [[NSMutableDictionary alloc] init];
+    [distanceDictionary setObject:distancesArray forKey:@"distance"];
+    [distanceDictionary setObject:@"Distance" forKey:@"title"];
+    [distanceDictionary setObject:[NSNumber numberWithInt:1] forKey:@"count"];
+    [self.filtersData insertObject:distanceDictionary atIndex:index];
+    
+}
+
+-(void) setSortBy:(int) index{
+    NSArray *sortByArray = @[@{@"name": @"Best Match", @"code":@0},
+                                @{@"name": @"Distance", @"code":@1},
+                                @{@"name": @"Highest Rated", @"code":@2}];
+    NSMutableDictionary *sortByDictionary = [[NSMutableDictionary alloc] init];
+    [sortByDictionary setObject:sortByArray forKey:@"sortBy"];
+    [sortByDictionary setObject:@"SortBy" forKey:@"title"];
+    [sortByDictionary setObject:[NSNumber numberWithInt:1] forKey:@"count"];
+    [self.filtersData insertObject:sortByDictionary atIndex:index];
     
 }
 
@@ -299,6 +368,12 @@
     [self.filtersData insertObject:categoryDictionary atIndex:index];
 }
 
+-(NSInteger)getListIndex: (int) section{
+    if (section == 1) {
+        return DISTANCE_LIST_BOX;
+    }
+    return SORT_BY_LIST_BOX;
+}
 
 #pragma mark table delegate methods
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
@@ -324,10 +399,35 @@
     if(indexPath.section == 0){
         [cell setOn:self.isDealOffered];
         cell.titleLabel.text = @"Offering a Deal";
-    }else{
+    }else if(indexPath.section == 3){
         NSArray *categoryArray = dic[@"categories"];
         cell.on = [self.selectedCategories containsObject:categoryArray[indexPath.row]];
         cell.titleLabel.text = categoryArray[indexPath.row][@"name"];
+    }else{
+        ListBoxCell *lbCell = [tableView dequeueReusableCellWithIdentifier:@"ListBoxCell"];
+        NSInteger listBoxindex = [self getListIndex:indexPath.section];
+//        if(indexPath.section == 1){
+//            listBoxindex = DISTANCE_LIST_BOX;
+//        }
+        lbCell.textLabel.text = @"Select";
+        if(listBoxindex == DISTANCE_LIST_BOX){
+            if(self.distanceFilter.length > 0)
+                lbCell.textLabel.text = self.distanceFilter;
+        }else{
+            if(self.sortByFilter)
+                lbCell.textLabel.text = self.sortByFilter[@"name"];
+        }
+        
+//        if([[self.toggleArray objectAtIndex:listBoxindex] integerValue]== 0)
+//        {
+//            lbCell.textLabel.text = @"Select";
+//        }
+//        else
+//        {
+//            lbCell.textLabel.text = @"Cancel";
+//        }
+//        lbCell.textLabel.text = @"Distance";
+        return lbCell;
     }
     cell.delegate = self;
 //    [cell setOn:YES];
@@ -353,5 +453,106 @@
         [self.selectedCategories removeObject:categoryArray[indexPath.row]];
     }
 }
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSInteger listBoxindex = [self getListIndex:indexPath.section];
+//    if(indexPath.section == 1)
+//    {
+        //if([[self.toggleArray objectAtIndex:listBoxindex] integerValue] == 0)
+        if(1==1)
+        {
+            self.toggleArray[listBoxindex] = [NSNumber numberWithInt:1];
+            [self.filtersTableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:YES];
+            [self bringUpPickerViewWithRow:indexPath];
+        }
+        else
+        {
+            self.toggleArray[listBoxindex] = [NSNumber numberWithInt:0];
+            [self.filtersTableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:YES];
+            [self hidePickerView];
+        }
+//    }
+}
+
+- (void)bringUpPickerViewWithRow:(NSIndexPath*)indexPath
+{
+    NSInteger listBoxindex = [self getListIndex:indexPath.section];
+    UITableViewCell *currentCellSelected = [self.filtersTableView cellForRowAtIndexPath:indexPath];
+    [UIView animateWithDuration:1.0f
+                          delay:0.0f
+                        options:UIViewAnimationOptionCurveEaseInOut
+                     animations:^
+     {
+         [self.pickerViewArray[listBoxindex] setHidden:NO];
+         [self.pickerViewArray[listBoxindex] setCenter:(CGPoint){currentCellSelected.frame.size.width/2, self.filtersTableView.frame.origin.y + currentCellSelected.frame.size.height*4}];
+     }
+                     completion:nil];
+}
+
+- (void)hidePickerView
+{
+    int i;
+    for(i = 0; i< 2; i++){
+        [UIView animateWithDuration:1.0f
+                              delay:0.0f
+                            options:UIViewAnimationOptionCurveEaseInOut
+                         animations:^
+         {
+             [self.pickerViewArray[i] setCenter:(CGPoint){160, 800}];
+         }
+                         completion:^(BOOL finished)
+         {
+             [self.pickerViewArray[i] setHidden:YES];
+         }];
+    }
+    
+}
+
+- (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component
+{
+    NSInteger index = [self.pickerViewArray indexOfObject:pickerView];
+    [self.toggleArray insertObject:[NSNumber numberWithInt:1] atIndex:index];
+    NSString *rowTitle = @"";
+    if (index == DISTANCE_LIST_BOX) {
+        rowTitle = self.filtersData[1][@"distance"][row];
+        self.distanceFilter = rowTitle;
+    }
+    else if(index == SORT_BY_LIST_BOX) {
+        NSDictionary *sortByDic = self.filtersData[2][@"sortBy"][row];
+        self.sortByFilter = sortByDic;
+    }
+    [self.filtersTableView reloadData];
+    [self hidePickerView];
+
+    
+}
+
+- (NSString*) pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component
+{
+    NSInteger index = [self.pickerViewArray indexOfObject:pickerView];
+    NSString *rowTitle = @"";
+    if (index == DISTANCE_LIST_BOX) {
+        rowTitle = self.filtersData[1][@"distance"][row];
+    }else if(index == SORT_BY_LIST_BOX) {
+        rowTitle = self.filtersData[2][@"sortBy"][row][@"name"];
+    }
+    return rowTitle;
+}
+
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView
+{
+    return 1;
+}
+
+- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component
+{
+    NSInteger index = [self.pickerViewArray indexOfObject:pickerView];
+    if (index == DISTANCE_LIST_BOX) {
+        return [self.filtersData[1][@"distance"] count];
+    }
+    return [self.filtersData[2][@"sortBy"] count];
+}
+
 
 @end

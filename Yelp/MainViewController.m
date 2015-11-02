@@ -156,7 +156,17 @@
 
 -(void) filtersViewController: (FiltersViewController *) filtersViewController didChangeFilters: (NSDictionary *)filters{
 //    NSLog(@"Filter applied: %s",filters[@"category_filter"]);
-    [self searchWithTerm:@"Restaurants" sortMode:0 categories:filters[@"category_filter"] deals:filters[@"deals_filter"]];
+    YelpSortMode v = YelpSortModeBestMatched;
+    if(filters[@"sort"]){
+         int num = filters[@"sort"];
+        if(num == 2){
+            v = YelpSortModeDistance;
+        }else{
+            v = YelpSortModeHighestRated;
+        }
+        
+    }
+    [self searchWithTerm:@"Restaurants" sortMode:v categories:filters[@"category_filter"] deals:filters[@"deals_filter"]];
 }
 
 #pragma mark - Private methods
