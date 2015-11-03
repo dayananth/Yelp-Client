@@ -9,6 +9,7 @@
 #import "FiltersViewController.h"
 #import "switchCell.h"
 #import "ListBoxCell.h"
+#import "LoadMoreCell.h"
 
 @interface FiltersViewController () <UITableViewDataSource, UITableViewDataSource, SwitchCellDelegate, UIPickerViewDataSource,
                                      UIPickerViewDelegate>
@@ -24,6 +25,7 @@
 @property (nonatomic, strong) NSMutableArray *pickerViewArray;
 @property (nonatomic, strong) NSString *distanceFilter;
 @property (nonatomic, strong) NSDictionary *sortByFilter;
+@property BOOL isCategoriesPaginationEnabled;
 @property NSInteger *toggle;
 
 typedef NS_ENUM(NSInteger, ListBox) {
@@ -62,6 +64,8 @@ typedef NS_ENUM(NSInteger, ListBox) {
     [self setFilterProperties];
     [self.filtersTableView registerNib:[UINib nibWithNibName:@"switchCell" bundle:nil] forCellReuseIdentifier:@"switchCell"];
     [self.filtersTableView registerNib:[UINib nibWithNibName:@"ListBoxCell" bundle:nil] forCellReuseIdentifier:@"ListBoxCell"];
+    [self.filtersTableView registerNib:[UINib nibWithNibName:@"LoadMoreCell" bundle:nil] forCellReuseIdentifier:@"LoadMoreCell"];
+    self.isCategoriesPaginationEnabled = YES;
     [self.filtersTableView reloadData];
     [self configurePickerView];
     
@@ -377,6 +381,9 @@ typedef NS_ENUM(NSInteger, ListBox) {
 
 #pragma mark table delegate methods
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if(section == 3 && self.isCategoriesPaginationEnabled){
+        return 10;
+    }
     NSDictionary *dic = [self.filtersData objectAtIndex:section];
     return [[dic objectForKey:@"count"] integerValue];
 }
@@ -400,15 +407,18 @@ typedef NS_ENUM(NSInteger, ListBox) {
         [cell setOn:self.isDealOffered];
         cell.titleLabel.text = @"Offering a Deal";
     }else if(indexPath.section == 3){
-//        if(indexPath.row > 20){
-//            UITableViewCell *loadMoreCell = [[UITableViewCell alloc] init];
-//            UIButton *button = [[UIButton alloc] init];
-//            button.titleLabel.text = @"See All Options";
-//            loadMoreCell
-//        }
-        NSArray *categoryArray = dic[@"categories"];
-        cell.on = [self.selectedCategories containsObject:categoryArray[indexPath.row]];
-        cell.titleLabel.text = categoryArray[indexPath.row][@"name"];
+        NSLog([NSString stringWithFormat:@"%ld", [indexPath row]]);
+        if(self.isCategoriesPaginationEnabled && [indexPath row] == 9){
+            self.isCategoriesPaginationEnabled = false;
+            LoadMoreCell *loadMoreCell = [tableView dequeueReusableCellWithIdentifier:@"LoadMoreCell"];
+            return loadMoreCell;
+        }else{
+            NSArray *categoryArray = dic[@"categories"];
+            cell.on = [self.selectedCategories containsObject:categoryArray[indexPath.row]];
+            cell.titleLabel.text = categoryArray[indexPath.row][@"name"];
+        }
+        
+        
     }else{
         ListBoxCell *lbCell = [tableView dequeueReusableCellWithIdentifier:@"ListBoxCell"];
         NSInteger listBoxindex = [self getListIndex:indexPath.section];
@@ -418,7 +428,7 @@ typedef NS_ENUM(NSInteger, ListBox) {
         lbCell.textLabel.text = @"Select";
         if(listBoxindex == DISTANCE_LIST_BOX){
             if(self.distanceFilter.length > 0)
-                lbCell.textLabel.text = self.distanceFilter;
+                lbCell.textLabel.text = [NSString stringWithFormat:@"%@ mile(s)", self.distanceFilter];
         }else{
             if(self.sortByFilter)
                 lbCell.textLabel.text = self.sortByFilter[@"name"];
@@ -463,6 +473,10 @@ typedef NS_ENUM(NSInteger, ListBox) {
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     NSInteger listBoxindex = [self getListIndex:indexPath.section];
+    if(indexPath.section == 3 && indexPath.row == 9 && !self.isCategoriesPaginationEnabled){
+        [self.filtersTableView reloadData];
+        return;
+    }
 //    if(indexPath.section == 1)
 //    {
         //if([[self.toggleArray objectAtIndex:listBoxindex] integerValue] == 0)

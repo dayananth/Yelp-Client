@@ -15,6 +15,8 @@
 		0C5BBE431BE48C7500F5D0BC /* switchCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0C5BBE411BE48C7500F5D0BC /* switchCell.xib */; settings = {ASSET_TAGS = (); }; };
 		0C5BBE4A1BE6A14A00F5D0BC /* ListBoxCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0C5BBE481BE6A14A00F5D0BC /* ListBoxCell.m */; settings = {ASSET_TAGS = (); }; };
 		0C5BBE4B1BE6A14A00F5D0BC /* ListBoxCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0C5BBE491BE6A14A00F5D0BC /* ListBoxCell.xib */; settings = {ASSET_TAGS = (); }; };
+		0C5BBE4F1BE824F300F5D0BC /* LoadMoreCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0C5BBE4D1BE824F300F5D0BC /* LoadMoreCell.m */; settings = {ASSET_TAGS = (); }; };
+		0C5BBE501BE824F300F5D0BC /* LoadMoreCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0C5BBE4E1BE824F300F5D0BC /* LoadMoreCell.xib */; settings = {ASSET_TAGS = (); }; };
 		11F304F81BDC02C1000ED8EF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 11F304F71BDC02C1000ED8EF /* LaunchScreen.storyboard */; };
 		11F304FF1BDC476D000ED8EF /* YelpBusiness.m in Sources */ = {isa = PBXBuildFile; fileRef = 11F304FE1BDC476D000ED8EF /* YelpBusiness.m */; };
 		420474F618DC299500E88E07 /* YelpClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 420474F518DC299500E88E07 /* YelpClient.m */; };
@@ -58,6 +60,9 @@
 		0C5BBE471BE6A14A00F5D0BC /* ListBoxCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ListBoxCell.h; sourceTree = "<group>"; };
 		0C5BBE481BE6A14A00F5D0BC /* ListBoxCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ListBoxCell.m; sourceTree = "<group>"; };
 		0C5BBE491BE6A14A00F5D0BC /* ListBoxCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ListBoxCell.xib; sourceTree = "<group>"; };
+		0C5BBE4C1BE824F300F5D0BC /* LoadMoreCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoadMoreCell.h; sourceTree = "<group>"; };
+		0C5BBE4D1BE824F300F5D0BC /* LoadMoreCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoadMoreCell.m; sourceTree = "<group>"; };
+		0C5BBE4E1BE824F300F5D0BC /* LoadMoreCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LoadMoreCell.xib; sourceTree = "<group>"; };
 		11F304F71BDC02C1000ED8EF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		11F304FD1BDC476D000ED8EF /* YelpBusiness.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YelpBusiness.h; sourceTree = "<group>"; };
 		11F304FE1BDC476D000ED8EF /* YelpBusiness.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YelpBusiness.m; sourceTree = "<group>"; };
@@ -124,6 +129,9 @@
 				0C5BBE471BE6A14A00F5D0BC /* ListBoxCell.h */,
 				0C5BBE481BE6A14A00F5D0BC /* ListBoxCell.m */,
 				0C5BBE491BE6A14A00F5D0BC /* ListBoxCell.xib */,
+				0C5BBE4C1BE824F300F5D0BC /* LoadMoreCell.h */,
+				0C5BBE4D1BE824F300F5D0BC /* LoadMoreCell.m */,
+				0C5BBE4E1BE824F300F5D0BC /* LoadMoreCell.xib */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -326,6 +334,7 @@
 				0C5BBE391BE1EB2300F5D0BC /* YelpBusinessCell.xib in Resources */,
 				42FD6C5518DC286B000BF2B9 /* InfoPlist.strings in Resources */,
 				11F304F81BDC02C1000ED8EF /* LaunchScreen.storyboard in Resources */,
+				0C5BBE501BE824F300F5D0BC /* LoadMoreCell.xib in Resources */,
 				420474FC18DC2B2100E88E07 /* MainViewController.xib in Resources */,
 				0C5BBE3E1BE4831500F5D0BC /* FiltersViewController.xib in Resources */,
 				0C5BBE4B1BE6A14A00F5D0BC /* ListBoxCell.xib in Resources */,
@@ -399,6 +408,7 @@
 			files = (
 				0C5BBE3D1BE4831500F5D0BC /* FiltersViewController.m in Sources */,
 				0C5BBE4A1BE6A14A00F5D0BC /* ListBoxCell.m in Sources */,
+				0C5BBE4F1BE824F300F5D0BC /* LoadMoreCell.m in Sources */,
 				0C5BBE421BE48C7500F5D0BC /* switchCell.m in Sources */,
 				42FD6C5B18DC286B000BF2B9 /* AppDelegate.m in Sources */,
 				0C5BBE381BE1EB2300F5D0BC /* YelpBusinessCell.m in Sources */,
